@@ -1,0 +1,281 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    
+    <script src = "https://code.jquery.com/jquery-3.1.0.min.js"></script>
+
+    <title>Crush Prediction</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="bootstrap/css/bootstrap.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <!-- <link href="jumbotron.css" rel="stylesheet"> -->
+  </head>
+
+  <body>
+
+
+    <!-- Main jumbotron for a primary marketing message or call to action -->
+<div>
+  <div class = "row" id = "main-header">
+    <div class= "thumbnail-overlay text-center">
+      <img class="img-responsive" src="images/hearts2.jpg" width=100% style="height:40vh;object-fit: cover;">
+      <div class = "caption-big">
+        <div class="container">
+          <h1>Does my crush like me back?</h1>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+	
+    <div class="container-fluid" id="innerDiv" style="padding-top: 20px; padding-right: 5vh; padding-left:5vh;">
+     
+	<h1 style="padding:10px;"><center>You<hr></center></h1>
+		<canvas id = "canvas"></canvas>
+      
+      <div class="row" style="padding:10px">
+      	<div class="col-md-3">
+          <h3>Gender</h3>
+           <input id="maleValue" type="radio" name="gender" value="1"> Male<br>
+			<input id="femaleValue" type="radio" name="gender" value="0"> Female<br>
+        </div>
+        <div class="col-md-3">
+          <h3>Age</h3>
+           <input type="text" class="form-control" id="yourAgeInput" aria-describedby="dateHelp" placeholder="How old are you?">
+        </div>
+        <div class="col-md-3">
+          <h3>Attractiveness</h3>
+          <input type="text" class="form-control" id="yourAttrInput" aria-describedby="priceHelp" placeholder="Enter your physical attrictiveness [1-10]">
+        </div>
+<!--        <div class="col-md-3">
+          <h3>Income</h3>
+          <input type="text" class="form-control" id="yourIncomeInput" aria-describedby="volumeHelp" placeholder="Your yearly income">
+        </div> -->
+      </div> 
+
+	<div class="row" style="padding:10px">
+		<div class="col-md-3">
+			<h3>Exercise Level</h3>
+			0 <input type="range" id="exerciseInput" min="0" max="10" style="width:200px"> 10
+		</div>
+
+		<div class="col-md-3">
+			<h3>Reading Level</h3>
+			0 <input type="range" id="readingInput" min="0" max="10" style="width:200px"> 10
+		</div>
+
+		<div class="col-md-3">
+			<h3>Outgoing Level</h3>
+			0 <input type="range" id="outgoingInput" min="0" max="10" style="width:200px"> 10
+		</div>
+
+<!--		<div class="col-md-3">
+			<h3>Expected Happiness</h3>
+			0 <input type="range" name="happinessInput" min="0" max="10" style="width:200px"> 10
+		</div>  -->
+  	</div> 
+      <h1 style="padding:10px;"><center>Your Crush<hr></center></h1>
+		 
+      <div class="row">
+        <div class="col-md-3">
+          <h3>Age</h3>
+           <input type="text" class="form-control" id="crushAgeInput" aria-describedby="dateHelp" placeholder="How old is your crush?">
+        </div>
+
+        <div class="col-md-3">
+          <h3>Attractiveness</h3>
+          <input type="text" class="form-control" id="crushAttrInput" aria-describedby="priceHelp" placeholder="Enter your crush's attrictiveness [1-10]">
+        </div>
+      </div>
+      
+      <center>
+        <div class = "row" style="padding: 30px   ">
+          <div class="col-md-12">
+            <button id="predictButton" class="btn btn-primary"><h2>Predict!</h2></button>
+          </div>
+        </div>
+        <div class = "row" style="padding: 30px   ">
+          <div class="col-md-12" id="predictOutput">
+          </div>
+        </div>
+      </center>
+      <hr>
+      <footer>
+        <p><Center>Patrick Lai, Yueh Liu</Center></p>
+      </footer>
+    </div> <!-- /container -->
+
+    <!-- Handles making API calls to the predictor -->
+    <script>
+
+    $(document).ready(function(){$("body").hide().fadeIn(1000);});
+
+    $("#predictButton").click(function(){    
+    	var url = "https://ussouthcentral.services.azureml.net/workspaces/eb7432ab0f174ccdb53440329a1b4008/services/c97d39a77bae4e03abfdd0cbd78bde15/execute?api-version=2.0&details=true";
+
+      	var apiKey = "/fCPiWaGz13ROicKyitOaoFTBH4vk36dIKeSO8Qc1mK+1DsfOHuzVgkJGMa3dJOdLYoKMz6Y3Zbf18wKl3d1ug==";
+
+      	var  headers = {
+	        'Content-Type':'application/json',
+	        'Authorization':('Bearer '+ apiKey),
+	        'Access-Control-Allow-Origin': "*"
+      	};
+
+      	// male = 1, female = 0 for gender
+      	var gender = 0;
+      	console.log("Male value: " + maleValue.value)
+      	var isMale = maleValue.value == 1;
+      	if(isMale)
+      		gender = 1;
+
+      	console.log("gender: " + gender)
+
+	    var data =  {
+        	"Inputs": {
+                "input1":
+                {
+                    "ColumnNames": ["gender", "age", "attr", "like", "age_o", "dec_o", "exphappy", "reading", "exercise", "go_out"],
+                    "Values": [
+	                    [ gender, yourAgeInput.value, yourAttrInput.value, crushAttrInput.value, crushAgeInput.value, "0", crushAttrInput.value, readingInput.value, exerciseInput.value, outgoingInput.value],
+	                    [ "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ],
+                    ]
+                },
+            },
+            "GlobalParameters": {}
+		}
+
+        console.log(data);
+
+        $.ajax({
+          url : url,
+          type: 'POST',
+          headers : headers,
+          crossDomain: true,
+          data: JSON.stringify(data),
+          contentType: "application/json; charset=utf-8",
+          dataType: 'json'
+        }).done(function(response) {
+            console.log(response);
+            var values = response['Results']['output1']['value']['Values'][0];
+            var likePercent = 100 * Math.round(10000 * values[values.length - 1]) / 10000;
+			document.getElementById("predictOutput").innerHTML = "<h2>There is a " + (likePercent) + "% chance that your crush likes you back.</h2>";
+			console.log(likePercent);
+			HandlePercent(likePercent);
+
+        });
+    });
+
+    function HandlePercent (output){
+    	if(output > 60){
+    		document.getElementById("canvas").style.display = "block"; 
+    	} else {
+    		document.getElementById("canvas").style.display = "none"; 
+    	}
+    }
+
+    </script>
+
+    <!-- Heart Animation -->
+    <script>
+    function DrawImage(image, image2){
+    	var HeartsBackground = {
+		  heartHeight: 60,
+		  heartWidth: 64,
+		  hearts: [],
+		  //heartImage: 'http://i58.tinypic.com/ntnw5.png',
+		  heartImage: image,
+		  eggImage: image2,
+		  maxHearts: 100,
+		  minScale: 0.4,
+		  draw: function() {
+		    this.setCanvasSize();
+		    this.ctx.clearRect(0, 0, this.w, this.h);
+		    for (var i = 0; i < this.hearts.length; i++) {
+		      var heart = this.hearts[i];
+		      heart.image = new Image();
+		      heart.image.style.height = heart.height;
+		      heart.image.src = this.heartImage;
+		      this.ctx.globalAlpha = heart.opacity;
+		      this.ctx.drawImage (heart.image, heart.x, heart.y, heart.width, heart.height);
+		    }
+
+		    // for (var i = 0; i < this.hearts.length; i++) {
+		    //   var heart = this.hearts[i];
+		    //   heart.image = new Image();
+		    //   heart.image.style.height = heart.height;
+		    //   heart.image.src = this.eggImage;
+		    //   this.ctx.globalAlpha = heart.opacity;
+		    //   var rndX = Math.random() * this.w;
+		    //   this.ctx.drawImage (heart.image, rndX, heart.y, heart.width, heart.height);
+		    // }
+		    this.move();
+		  },
+		  move: function() {
+		    for(var b = 0; b < this.hearts.length; b++) {
+		      var heart = this.hearts[b];
+		      heart.y += heart.ys;
+		      if(heart.y > this.h) {
+		        heart.x = Math.random() * this.w;
+		        heart.y = -1 * this.heartHeight;
+		      }
+		    }
+		  },
+		  setCanvasSize: function() {
+		    this.canvas.width = window.innerWidth;
+		    this.canvas.height = window.innerHeight;
+		    this.w = this.canvas.width;
+		    this.h = this.canvas.height;
+		  },
+		  initialize: function() {
+		    this.canvas = $('#canvas')[0];
+
+		    if(!this.canvas.getContext)
+		      return;
+
+		    this.setCanvasSize();
+		    this.ctx = this.canvas.getContext('2d');
+
+		    for(var a = 0; a < this.maxHearts; a++) {
+		      var scale = (Math.random() * (1 - this.minScale)) + this.minScale;
+		      this.hearts.push({
+		        x: Math.random() * this.w,
+		        y: Math.random() * this.h,
+		        ys: Math.random() + 1,
+		        height: scale * this.heartHeight,
+		        width: scale * this.heartWidth,
+		        opacity: scale
+		      });
+		    }
+
+		    setInterval($.proxy(this.draw, this), 30);
+		  }
+		};
+		return HeartsBackground;
+    }
+
+	
+
+	$(document).ready(function(){
+		document.getElementById("canvas").style.display = "none";
+		var hearts = DrawImage('http://i58.tinypic.com/ntnw5.png', 'https://cdn.shopify.com/s/files/1/1061/1924/products/100_Emoji_large.png');
+		hearts.initialize();
+	});
+    </script>
+
+    <!-- ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js"></script>
+    <script src="bootstrap/js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+  </body>
+</html>
